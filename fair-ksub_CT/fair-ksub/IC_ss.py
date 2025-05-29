@@ -1,3 +1,4 @@
+'''
 import numpy as np
 import pandas as pd
 from multiprocessing import Pool, cpu_count
@@ -80,3 +81,77 @@ def IC(
         results = pool.map(_simulate_once, arg_iter, chunksize=max(1, mc // (10 * n_jobs)))
 
     return float(np.mean(results))
+'''
+# file: ic_parallel_noisy_pool.py
+
+import numpy as np
+import pandas as pd
+
+def _simulate_once(args):
+    _G, _weight_cols, _sigmas, seed_sets, rng_seed = args
+    rng = np.random.RandomState(rng_seed)
+    activated_global = set()
+    for topic_idx, (S_topic, w_col) in enumerate(zip(seed_sets, _weight_cols)):
+        sigma = _sigmas[topic_idx]
+        active = list(S_topic)
+        activated = set(S_topic)
+        while active:
+            temp = _G[_G['source'].isin(active)]
+            targets = temp['target'].to_numpy()
+            probs   = temp[w_col].to_numpy()
+            gau_noise = np.clip(rng.normal(0, sigma, len(probs)), -0.1, 0.1)
+            probs_noisy = np.clip(probs + gau_noise, 0, 1)
+            coins = rng.rand(len(targets))
+            new_nodes = targets[coins < probs_noisy]
+            new_nodes = [v for v in new_nodes if v not in activated]
+            activated.update(new_nodes)
+            active = new_nodes
+        activated_global.update(activated)
+    return len(activated_global)
+"""""
+def IC(
+        G: pd.DataFrame,
+        seed_sets: list[list[int]],
+        sigmas: list[float],
+        mc: int = 1000,
+        pool=None,
+        random_state: int | None = None
+):
+    weight_cols = [c for c in G.columns if c.startswith("weight")]
+    assert len(weight_cols) == len(seed_sets) == len(sigmas), \
+        "Số cột weight, seed_set và sigma phải khớp số topic."
+    rng = np.random.RandomState(random_state)
+    seeds_for_runs = rng.randint(0, 2**31 - 1, size=mc)
+    arg_iter = [(G, weight_cols, sigmas, seed_sets, s) for s in seeds_for_runs]
+    #arg_iter = [(G, temp_x, sigmas, seed) for seed in seeds]
+    if pool is not None:
+        results = pool.map(_simulate_once, arg_iter, chunksize=max(1, mc // (10 * pool._processes)))
+    else:
+        results = list(map(_simulate_once, arg_iter))
+    results = pool.map(_simulate_once, arg_iter, chunksize=max(1, mc // (10 * pool._processes)))
+    return float(np.mean(results))
+"""
+
+
+def IC(
+        G: pd.DataFrame,
+        seed_sets: list[list[int]],
+        sigmas: list[float],
+        mc: int = 1000,
+        pool=None,
+        random_state: int | None = None
+):
+    weight_cols = [c for c in G.columns if c.startswith("weight")]
+    assert len(weight_cols) == len(seed_sets) == len(sigmas), \
+        "Số cột weight, seed_set và sigma phải khớp số topic."
+    rng = np.random.RandomState(random_state)
+    seeds_for_runs = rng.randint(0, 2 ** 31 - 1, size=mc)
+    arg_iter = [(G, weight_cols, sigmas, seed_sets, s) for s in seeds_for_runs]
+
+    if pool is not None:  # Use multiprocessing if pool is provided
+        results = pool.map(_simulate_once, arg_iter, chunksize=max(1, mc // (10 * pool._processes)))
+    else:  # Fallback to sequential processing if no pool is provided
+        results = list(map(_simulate_once, arg_iter))
+
+    return float(np.mean(results))
+
