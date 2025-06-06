@@ -155,3 +155,16 @@ def IC(
 
     return float(np.mean(results))
 
+def main():
+    # Đọc file graph với 2 topic (giả sử file có weight1, weight2)
+    G = pd.read_csv("graph1000.csv")
+    seeds_topic1 = [457, 364, 863]
+    seeds_topic2 = [311, 573, 997]
+    x = [seeds_topic1, seeds_topic2]
+
+    sigmas = [0.1, 0.1]  # hoặc tuỳ ý
+    result = IC(G, x, sigmas=sigmas, mc=1000)
+    print(f"Ảnh hưởng union cho 2 topic (file): {result:.5f}")
+
+if __name__ == "__main__":
+    main()

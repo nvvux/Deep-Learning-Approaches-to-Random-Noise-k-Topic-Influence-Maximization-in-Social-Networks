@@ -6,4 +6,4 @@
 #SBATCH --output=%x.%j.out
 #SBATCH --error=%x.%j.err
 
-python ./test.py
+python ./train_glie.py

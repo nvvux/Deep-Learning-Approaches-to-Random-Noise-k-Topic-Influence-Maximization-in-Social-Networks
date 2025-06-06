@@ -31,3 +31,21 @@ def IC(G, x, sigmas=None, mc=1000):
         total_active = set().union(*active_nodes)
         spread.append(len(total_active))
     return np.mean(spread)
+
+def main():
+    # Đọc file graph với 2 topic (giả sử file có weight1, weight2)
+    G = pd.read_csv("fb_clone.csv")
+
+    # Seed chọn tay hoặc random, không giao nhICau
+    #(183, 86, 181, 178, 8), (7, 16, 124, 48, 68) inf 124
+    # (86, 20, 136, 29, 21), (77, 127, 22, 124, 56)inf 87
+    seeds_topic1 = [1137, 245]
+    seeds_topic2 = [0, 1]
+    x = [seeds_topic1, seeds_topic2]
+
+    sigmas = [0.1, 0.1]  # hoặc tuỳ ý
+    result = IC(G, x, sigmas=sigmas, mc=1000)
+    print(f"Ảnh hưởng union cho 2 topic (file): {result:.2f}")
+
+if __name__ == "__main__":
+    main()

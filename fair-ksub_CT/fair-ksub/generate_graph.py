@@ -35,10 +35,10 @@ def generate_er_graph_to_csv(n_nodes, p, n_topics, output_file, seed=None):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Sinh đồ thị Erdős–Rényi ngẫu nhiên và xuất ra CSV.")
-    parser.add_argument("--n_nodes", type=int, default=20, help="Số lượng node (mặc định: 20)")
-    parser.add_argument("--p", type=float, default=0.2, help="Xác suất tạo cạnh (mặc định: 0.2)")
+    parser.add_argument("--n_nodes", type=int, default=4038, help="Số lượng node (mặc định: 20)")
+    parser.add_argument("--p", type=float, default=0.01, help="Xác suất tạo cạnh (mặc định: 0.2)")
     parser.add_argument("--n_topics", type=int, default=2, help="Số chủ đề (mặc định: 2)")
-    parser.add_argument("--output_file", type=str, default="graph250.csv",
+    parser.add_argument("--output_file", type=str, default="fb_clone.csv",
                         help="Tên file đầu ra (mặc định: graph.csv)")
     parser.add_argument("--seed", type=int, default=None, help="Seed ngẫu nhiên (tùy chọn)")
 
